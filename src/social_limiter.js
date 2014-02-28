@@ -5,40 +5,50 @@
     $this = this;
     prev_text_color = $this.css('color')
     settings = $.extend({
-      color: '#CD2626',
-      limiter: null,
-      social_name: null,
-      onExceed: null,
-      onLimit: null
+      insert_counter_to: 'body', // hook-up the counter to particular ID
+      color: '#CD2626',  // set color if limit is exceeded
+      limiter: null,   // set the counter
+      social_name: null,  // set the name
+      onExceed: null,  // callback when limit is exceeded
+      onLimit: null  // callback when limit isnt exceeded
     }, options);
 
-    // Seeting limit counter with social name is mandatory
+    // Ensure we have Integer value to compare content length
+    settings.limiter = parseInt(settings.limiter)
+
+    // Setting character counter and social name are mandatory
     if(settings.social_name === null && settings.limiter == null)
       return $.error('Cant limit character without social name and limiter');
 
     span_html = "<span class='ui-social-limiter-counter'>" + settings.limiter + "</span>"
-    $(span_html).insertAfter($this);
+    $(settings.insert_counter_to).html(span_html)
+    $(settings.insert_counter_to).find('.ui-social-limiter-counter').text(settings.limiter - this.val().length);
+    computeCountAndRunCallback(this, settings);
 
     if (!$.data(this, 'social_limiter')) this.data('social_limiter', SocialLimiter(this, settings))
 
     $this.on('keyup', function(e) {
       var text_count = this.value.length;
+
       $('span.ui-social-limiter-counter').text(settings.limiter - text_count)
-      if(text_count > settings.limiter) {
+      computeCountAndRunCallback(this, settings);
+    });
+
+    function computeCountAndRunCallback($el, options) {
+      if($($el).val().length > options.limiter) {
         $('span.ui-social-limiter-counter').addClass('ui-social-limiter-counter-exceeded').
-          css('color', settings.color)
-          if( $.isFunction( settings.onExceed ) ) {
-            settings.onExceed.call( this );
+          css('color', options.color)
+          if( $.isFunction( options.onExceed ) ) {
+            options.onExceed.call( this );
           }
-      }
-      else {
+      } else {
         $('span.ui-social-limiter-counter').removeClass('ui-social-limiter-counter-exceeded').
           css('color', prev_text_color)
-          if( $.isFunction( settings.onLimit ) ) {
-            settings.onLimit.call( this );
+          if( $.isFunction( options.onLimit ) ) {
+            options.onLimit.call( this );
           }
       }
-    });
+    };
 
     function SocialLimiter(el, options) {
       options.$color = options.color;

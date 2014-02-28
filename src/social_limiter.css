@@ -20,6 +20,9 @@ span.demo {
   display: inline-block;
   width: 11%;
 }
-/*.ui-social-limiter-counter-exceeded {
-  color: red;
-}*/
+.status {
+  display: inline-block;
+}
+.error {
+  color: #CD2626;
+}
